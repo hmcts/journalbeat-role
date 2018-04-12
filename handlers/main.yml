@@ -1,0 +1,7 @@
+---
+
+- name: restart service
+  become: yes
+  service:
+    name: journalbeat
+    state: restarted

@@ -1,0 +1,94 @@
+---
+- name: Create journalbeat folder
+  become: yes
+  file:
+    path: /usr/share/journalbeat/bin/
+    state: directory
+    mode: 0755
+
+- name: Validate required metadata fields
+  fail: msg="journalbeat.field_metadata.{{ item }} is a required field"
+  when: item not in journalbeat.field_metadata
+  with_items:
+    - team
+    - environment
+
+- name: Install journalbeat
+  become: yes
+  get_url:
+    url: "{{ journalbeat_download_url }}"
+    dest: "/usr/share/journalbeat/bin/journalbeat"
+    mode: 0755
+
+- name: copy service
+  become: yes
+  copy:
+    src: journalbeat.service
+    dest: "/lib/systemd/system/journalbeat.service"
+    mode: 0644
+
+- name: create journalbeat configuration folder
+  become: yes
+  file:
+    path: /etc/journalbeat/
+    state: directory
+    mode: 0755
+
+- name: Ensure certs directory exists
+  become: yes
+  file:
+    dest: "/etc/journalbeat/certs"
+    state: directory
+    owner: root
+    group: root
+    mode: 0775
+
+- name: copy SSL cert
+  become: yes
+  copy:
+    dest: "{{ journalbeat_ssl_crt_location }}"
+    content: "{{ journalbeat_ssl_crt }}"
+
+- name: Copy SSL key
+  become: yes
+  copy:
+    dest: "{{ journalbeat_ssl_key_location }}"
+    content: "{{ journalbeat_ssl_key }}"
+
+- name: copy SSL ca
+  become: yes
+  copy:
+    dest: "{{ journalbeat_ssl_ca_location }}"
+    content: "{{ journalbeat_ssl_ca }}"
+
+- name: add config file
+  become: yes
+  template:
+    src: journalbeat.yml
+    dest: /etc/journalbeat/journalbeat.yml
+    mode: 0644
+  notify:
+    - restart service
+
+- name: add template file
+  become: yes
+  template:
+    src: journalbeat-template.json
+    dest: /etc/journalbeat/journalbeat-template.json
+    mode: 0644
+  notify:
+    - restart service
+
+- name: validate configuration
+  become: yes
+  command: /usr/share/journalbeat/bin/journalbeat -configtest -c /etc/journalbeat/journalbeat.yml -path.config /etc/journalbeat -path.data /var/lib/journalbeat -path.logs /var/log/journalbeat
+  changed_when: false
+
+- meta: flush_handlers
+
+- name: enable service
+  become: yes
+  service:
+    name: journalbeat
+    enabled: yes
+    state: started

@@ -1,0 +1,21 @@
+---
+driver:
+  name: docker
+
+docker:
+  containers:
+    - name: initial_test
+      image: centos/systemd
+      image_version: latest
+      build_image: yes
+      privileged: yes
+      cap_add:
+        - SYS_ADMIN
+      environment:
+        http_proxy: ${http_proxy}
+
+verifier:
+  name: testinfra
+
+ansible:
+  playbook: tests/playbook.yml

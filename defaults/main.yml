@@ -1,0 +1,23 @@
+---
+# Location of the precompiled journalbeat binary
+journalbeat_download_url: ""
+
+# These defaults must be adjusted per environment
+journalbeat:
+  field_metadata:
+    team: default
+    environment: notset
+  tags: ['application']
+  units: ['application.service']
+  logstash:
+    hosts: ['localhost:5200']
+
+# Location of the remote Logstash instance or load balancer
+logstash_pool: "localhost:5044"
+
+journalbeat_ssl_crt_location: "/etc/journalbeat/certs/reform.hmcts.net.crt"
+journalbeat_ssl_key_location: "/etc/journalbeat/certs/reform.hmcts.net.key"
+journalbeat_ssl_ca_location: "/etc/journalbeat/certs/reform.hmcts.net.ca"
+journalbeat_ssl_crt: ""
+journalbeat_ssl_key: ""
+journalbeat_ssl_ca: ""

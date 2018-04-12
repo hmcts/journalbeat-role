@@ -1,0 +1,34 @@
+---
+- hosts: all
+  tasks:
+    - name: Install testing requirements
+      package:
+        name: net-tools
+        state: present
+    - name: Install openssl
+      yum:
+        name: openssl
+        state: present
+    - name: Add test certificate
+      command: "openssl req -x509 -newkey rsa:4096 -sha256 -nodes -keyout /hmcts.key -out  /hmcts.crt -subj /CN=elktest.local -days 3650"
+      args:
+        creates: "/hmcts.*"
+    - name: slurp certificate
+      slurp:
+        src: /hmcts.crt
+      register: crtslurp
+    - name: slurp key
+      slurp:
+        src: /hmcts.key
+      register: keyslurp
+
+- hosts: all
+  gather_facts: true
+  vars:
+    # External binary used just for testing
+    journalbeat_download_url: "https://github.com/mheese/journalbeat/releases/download/v5.6.8/journalbeat"
+    journalbeat_ssl_crt: "{{ crtslurp['content'] | b64decode }}"
+    journalbeat_ssl_ca: "{{ crtslurp['content'] | b64decode }}"
+    journalbeat_ssl_key: "{{ keyslurp['content'] | b64decode }}"
+  roles:
+    - role: journalbeat-role
