@@ -4,10 +4,9 @@ driver:
 
 docker:
   containers:
-    - name: initial_test
+    - name: journalbeat-role-${BRANCH_NAME}-${BUILD_NUMBER}
       image: centos/systemd
       image_version: latest
-      build_image: yes
       privileged: yes
       cap_add:
         - SYS_ADMIN

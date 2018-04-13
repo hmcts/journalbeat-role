@@ -73,7 +73,7 @@ tags: [ {{ '"' + journalbeat.tags | join('\", \"') + '"' }} ]
 #fields:
 #  env: staging
 fields:
-{% for field, value in journalbeat.field_metadata.items() %}
+{% for field, value in journalbeat.field_metadata.items() | sort() %}
   {{ field }}: {{ value }}
 {% endfor %}
 
